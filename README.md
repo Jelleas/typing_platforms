@@ -7,7 +7,7 @@ With Python 3.5 came [type hints](https://www.python.org/dev/peps/pep-0484/). A 
 In turn, in Python these hints do not do anything on their own, they are just hints. However there are programs that can take these hints and help you write better code. This is what a type hint looks like in Python:
 
 ```Py
-def add(a: int, b: int) -> int:
+def sum(a: int, b: int) -> int:
     return a + b
 ```
 
@@ -24,22 +24,25 @@ Different programming languages have different type systems, but why? Take a qui
 ### Python
 
 ```Py
-def add(a, b):
-    return a + b
+def sum(items):
+    total = 0
+    for item in items:
+        total += item
+    return total
 ```
 
-Python's approach is simple, we'll just run the code and see if it works. If `a` and `b` can be added together, then great let's add them together. This all works:
+Python's approach is simple, we'll just run the code and see if it works. If `items` can be summed, then great let's do that. This all works:
 
 ```Py
-add(1, 2)
-add(1, 2.0)
-add([1, 2], [3, 4])
+sum([1, 2])
+sum([1, 2.0])
+sum({1, 2, 3})
 ```
 
 But this does **not**:
 
 ```Py
-add([1, 2], 3)
+sum(["hello", 1])
 ```
 
 And worse yet, we won't know that it does not work until this code is actually run. If the code is not properly tested, then running this function might not happen until its shipped to the client. In which case... **nightmares**.
@@ -50,25 +53,25 @@ And worse yet, we won't know that it does not work until this code is actually r
 Okay, but what about other languages? Remember C?
 
 ```C
-// C
-int add(int a, int b) {
-    return a + b;
+int sum(int items[], int n) {
+    int total = 0;
+    for (int i = 0; i < n; i++) {
+        total += items[i];
+    }
+    return total;
 }
 ```
 
-C takes a wildly different approach, put a concrete type in front of everything and check it when trying to compile. That way we'll know up front whether the code will even run. Because this:
-
-```
-add(1.0, 2.0);
-```
-
-Will nicely throw a compile error. No chance that this code reaches the client's desk! But wait, surely adding floats together is fine, right? Easy fix, write more code:
+C takes a different approach, put a concrete type in front of everything and check it when trying to compile. That way we'll know up front whether the code will even run. Because this:
 
 ```C
-float add(float a, float b) {
-    return a + b;
-}
+float array[] = {3.0, 4.0, 5.0};
+sum(array, 3);
 ```
+
+Will nicely throw a compile error. No chance that this code reaches the end user's desk. 
+
+But wait, floats can be summed right? Well, tough luck. You'll need to write a new function for floats.
 
 > For the curious, there are ways to escape C's type system through the use of casting and pointers. Most notably through the use of `void` pointers.
 
@@ -78,41 +81,62 @@ float add(float a, float b) {
 Let's find a middleground, Java. Java is a bureaucratic programming languages of sorts. Nothing is assumed, and everything has to be explicitly denoted. Here is an example: 
 
 ```java
-public static Number add(Number a, Number b) {
-    return a.doubleValue() + two.doubleValue();
+public static <T extends Number> sum(Iterable<T> items) {
+    T total = 0;
+    for (T item : items) {
+        total = total.doubleValue() + item.doubleValue();
+    }
+    return total;
 }
 ```
 
-Quickly jumping over `public static`, which just means this function can be called from anywhere (`public`) and is always available (`static`). You'll find the word `Number`.
+Quickly jumping over `public static`, which just means this function can be called from anywhere (`public`) and is always available (`static`). You'll find `<T extends Number>`.
 
-What is a `Number`? Well, as it turns out, [Number](https://docs.oracle.com/javase/8/docs/api/java/lang/Number.html) is a `class` of which each number (`Integer`, `Float`, `Double`, etc.) inherits. So really what this function says is, anything that inherits from Number, and thus can do anything a Number can do, can be passed into this function.
+What is a `Number`? Well, as it turns out, [Number](https://docs.oracle.com/javase/8/docs/api/java/lang/Number.html) is a `class` of which each number (`Integer`, `Float`, `Double`, etc.) inherits. `<T extends Number>` just means any type `T` that is an extension of a `Number`. So really what `T` says is, anything that is a Number, and thus can do anything a Number can do, can be passed into this function and will be returned from it too. 
 
-`a.doubleValue()`??? Inside the function it is now unknown what types `a` and `b` are. All we know is that they are both `Number`s. At this point we can only assume that `a` and `b` can do anything a `Number` can do and that is not much! In fact, a `Number` in Java can only convert itself to a more concrete `Double`, `Integer`, `Float`, etc. So what this function does is convert both `a` and `b` to `Double`s and then adds them together. Luckily the resulting `Double` is also a `Number` so we can immediately return it.
+Next, `Iterable<T>`. Iterable is an abstract generic type, more on this later. For now, all this says is some collection of things, be it a list, an array, or a tuple perhaps, over which can be iterated (with a for-loop for instance), containing elements of type `T`.
+
+`item.doubleValue()`??? Inside the function it is now unknown what the exact types of the items are. All we know is that they are `Number`s. At this point we can only assume that an item can do anything a `Number` can do, and that is not much! In fact, a `Number` in Java can only convert itself to a more concrete `Double`, `Integer`, `Float`, etc. So what this function does is convert all items to `Double`s and then sums them up. 
 
 Through this, this all works:
 
 ```java
-add(1, 2);
-add(4.0, 5);
-add(4.0, 5.0);
+sum({1, 2});
+sum({4.0, 5.0});
+```
+
+And even different data structures, such as linked lists:
+
+```java
+LinkedList<Number> items = new LinkedList<Number>();
+items.add(1);
+items.add(2.0);
+sum(items);
 ```
 
 And this will still nicely give a compile error:
 
 ```java
-add("hello", "bye");
+add({"hello", "bye"});
 ```
 
 Problem solved... right? Well, we did end up paying a steep price. Because be honest, which one is easier to understand:
 
 ```Py
-def add(a, b):
-    return a + b
+def sum(items):
+    total = 0
+    for item in items:
+        total += item
+    return total
 ```
 
 ```java
-public static Number add(Number a, Number b) {
-    return a.doubleValue() + two.doubleValue();
+public static <T extends Number> sum(Iterable<T> items) {
+    T total = 0;
+    for (T item : items) {
+        total = total.doubleValue() + item.doubleValue();
+    }
+    return total;
 }
 ```
 
