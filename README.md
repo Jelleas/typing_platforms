@@ -217,7 +217,7 @@ That looks somewhat redundant, doesn't it? How can the *literal* `3` be anything
 foo = 3
 ```
 
-Type inference does have its limitations, for instance `mypy` will not do any type inference in functions without type hints. To understand why, let's quickly into function type hints. In the simplest form:
+Type inference does have its limitations, for instance `mypy` will not do any type inference in functions without type hints. To understand why, let's quickly look into function type hints. In the simplest form:
 
 ```Py
 def add(a: int, b: int) -> int:
