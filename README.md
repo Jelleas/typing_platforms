@@ -305,7 +305,46 @@ Again, in most situations `mypy` can infer the types of the variables, and it is
     <textarea name="form[q2.3]" rows="1" required=""></textarea>
 
 
-## Abstract types: duck typing
+## Type Variables
+
+Generics work through the use of type variables. In Python these variables are provided by `TypeVar` from the `typing` module. Here is how it works:
+
+```Py
+from typing import TypeVar
+
+T = TypeVar('T')  # Can be anything
+N = TypeVar('N', int, float)  # Must be int or float
+```
+
+Type variables can be unconstraint, like `T` above. In this case `T` can be any type at all. Or type variables can be constraint, like `N` above. In which case `N` can only be an `int` or a `float`. Type variables can come in place of actual types. To create for instance generic functions:
+
+```Py
+from typing import Iterable, TypeVar
+
+T = TypeVar('T')
+
+def first(items: list[T]) -> T:
+    return items[0]
+```
+
+`first` will return the first item in the list, but what type is returned is dependent on the list. For instance, if `first` is called like so:
+
+```Py
+n = first([1,2,3])
+```
+
+Then `n` will be of type `int`. Because a `list[int]` is passed in and `T` will take on the form of `int`. `T` is what is ultimately returned from `first` and that is then why `n` is an `int`.
+
+Type variables can be used outside generic data structures too, for instance:
+
+```Py
+def longest(a: T, b: T) -> T:
+    return a if len(a) >= len(b) else b
+```
+
+This function will work for any type T, and it will return that same type.
+
+## Abstract types: structural subtyping aka duck typing
 
 So far we have looked at concrete types, such as integers, strings and lists. These types are expressive, you know exactly what you are working with. But, often these concrete types limit design. Take for instance this function:
 
@@ -317,13 +356,13 @@ def sum(items: list[int]) -> int:
     return item
 ```
 
-There is no reason this implementation cannot work with other types of data structures. A tuple of integers or a set of integers should work just fine, but the type hint `list[int]` will only accept a concrete `list`. This is quite unpythonic indeed!
+There is no reason this implementation cannot work with other types of data structures. A tuple of integers or a set of integers should work just fine, but the type hint `list[int]` will only accept a concrete `list`. This is quite unpythonic!
 
 Looking at the implementation of `sum`, all that is needed from `items` is that it works with a for-loop. Or more precisely, the data structure needs to be iterable. In this case we only care about a property of the type, not the concrete thing. Rather, if the type we insert into the function is somewhat list-like, the function should work just fine. In comes duck typing:
 
 > if it walks like a duck, swims like a duck, and quacks like a duck... it's a duck.
 
-We need a type that can swim, or in our case a data structure that is iterable. Whether that happens to be a duck or a fish in the end, that is irrelevant here. Luckily Python's `typing` module comes with a bunch of "duck types" built-in, one of which is `Iterable` that we can use like so:
+We need a type that can swim, or in our case a data structure that is iterable. Whether that happens to be a swimming duck or a swimming fish in the end, that is irrelevant here. Luckily Python's `typing` module comes with a bunch of "duck types" built-in, one of which is `Iterable` that we can use like so:
 
 ```Py
 from typing import Iterable
@@ -335,7 +374,7 @@ def sum(items: Iterable[int]) -> int:
     return item
 ```
 
-Now any calls to `sum`, whether that'd be with a `tuple` or `set` will all pass type checks. As all of these data structures are iterable! This form of abstract types is called structural subtyping, creating a subtype that only contains some structural aspect of the original type. Alternatively, and probably easier to remember: **static duck typing**.
+Now any calls to `sum`, whether that'd be with a `tuple` or `set`, will all pass type checks. As all of these data structures are iterable! This form of abstract types is called structural subtyping. Alternatively, and probably easier to remember: **static duck typing**. This is done through creating a subtype that only contains some structural aspect of the original type. For instance, `Iterable` is a subtype with only the method `__iter__` (Python's hidden method for iterable things). So as long as the actual type implements `__iter__` any type check will pass.
 
 
 <details>
@@ -364,3 +403,88 @@ sum([1.5, None]) # error: List item 1 has incompatible type "None"; expected "Su
 ```
 
 </details>
+
+## Abstract types: nominal subtyping aka subclassing
+
+Duck typing is great and all, but what if we actually do want a duck, not something that happens to act like a duck. For instance, let's say we are building a grading app and we have three user roles, `Teacher`, `Assistant` and `Student`. Implemented like so:
+
+```Py
+class User:
+
+class Staff(User): pass
+
+class Teacher(Staff): pass
+
+class Assistant(Staff): pass
+
+class Student(User): pass
+```
+
+Through this we can write functions that only accept specific types of users. For instance:
+
+```Py
+def view_grade(user: User) -> int: pass
+def add_grade(user: Staff) -> None: pass
+```
+
+This way the type checker will allow all three roles to view grades, but only the `Staff` roles can add a grade. This form of abstract types is called nominal subtyping, where that type or any subclass of that type is accepted.
+
+## Abstract types: special types
+
+There are some special cases that need special treating and you'll find these in the `typing` module! [Here are the docs](https://docs.python.org/3/library/typing.html#special-forms)
+
+### Union
+
+For instance, in some cases a function might be able to cope with multiple types. Effectively one type or the other. `Union` handles this like so:
+
+```Py
+from typing import Union
+
+def add(a: Union[int, float], b: Union[int, float]) -> Union[int, float]:
+    return a + b
+```
+
+> Starting in Python 3.10, `Union[int, float]` can also be written as `int | float`
+
+### Optional
+
+Sometimes it is uncertain whether a function will return a value. Let's say we are looking for the location of a needle in a haystack. It might be in the haystack, it might also not be. In case it is not, it is a common (not necessarily best) practice to return `None`. That is what `Optional` captures, either a value is returned, or `None`.
+
+```Py
+from typing import Optional, Sequence, TypeVar
+
+T = TypeVar("T")
+
+def find_index(haystack: Sequence[T], needle: T) -> Optional[int]:
+    for i, hay in enumerate(haystack):
+        if hay == needle:
+            return i
+    return None
+```
+
+> `Optional[int]` is equivalant to `Union[int, None]`. In that sense, it is entirely optional to use.
+
+> `Sequence` is a duck type for anything that keeps an order and is index-able. Lists and tuples are, but a `set` for instance is not.
+
+### Callable
+
+Functions can be passed to other functions too. That is what `Callable` captures in Python.
+
+```Py
+from typing import Callable
+
+def get_hashes(number: int) -> str:
+    return "#" * number
+
+def get_stars(number: int) -> str:
+    return "*" * number
+
+def create_pyramid(create_layer: Callable[[int], str], height) -> str:
+    pyramid = ""
+    for i in range(1, height + 1):
+        pyramid += create_layer(i) + "\n"
+    return pyramid
+
+print(create_pyramid(get_hashes, 5))
+print(create_pyramid(get_stars, 5))
+```
