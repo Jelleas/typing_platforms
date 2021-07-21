@@ -268,11 +268,12 @@ Let's take a quick look at `dict`. Dictionaries are generic over two types, thei
 grades: dict[str, int] = {"Martijn": 7, "Marleen": 8}
 ```
 
-Tuples are an immutable data structure, once initialized it cannot be changed. So it is known up front exactly what the type of each value in the tuple is going to be. Because of this the `tuple` type can take a variable amount of generic anotations like so:
+Tuples are an immutable data structure, once initialized it cannot be changed. So it is known up front exactly what the type of each value in the tuple is going to be. Because of this the `tuple` type can a variable amount of generic anotations with exactly as many types as there are values. Like so:
 
 ```Py
-foo: tuple[int, float]: (7, 7.2)
-bar: tuple[int, float, str]: (8, 7.9, "hello world")
+foo: tuple[int, float] = (7, 7.2)
+bar: tuple[int, float, str] = (8, 7.9, "hello world")
+baz: tuple[int, int, int] = (1, 2, 3)
 ```
 
 What about nested data structures?
