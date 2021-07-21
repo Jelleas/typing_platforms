@@ -156,7 +156,7 @@ All programming languages have some form of type system, but when and what they 
 
 #### Static
 
-Static in this context just means before execution, that could be when compiling the code or through running a seperate type checker. For instance, C makes use of static type checking to ensure that all types operate with one another upon compilation. That way, there is no (technically, little) chance for any type errors while running the program. On top of this C compilers also make use of the type information upon compilation to better optimize the resulting program. By for instance reserving precisely enough memory, as the data and their types is know up front.
+Static in this context just means before execution, that could be when compiling the code or through running a seperate type checker. For instance, C makes use of static type checking to ensure that all types operate with one another upon compilation. That way, there is no (technically, little) chance for any type errors while running the program. On top of this compilers can make use of the type information upon compilation to better optimize the resulting program. By for instance reserving precisely enough memory, as the data and their types is know up front.
 
 #### Dynamic
 
@@ -186,3 +186,122 @@ In contrast static type checking does not need to worry about performance (as mu
 
 Static type checking is often preferred, and so much so that languages such as JavaScript (in the form of TypeScript) and Python have started to adopt type information to enable static type checking. 
 </details>
+
+
+## Type hints in Python
+
+A type hint in the simplest form looks like this:
+
+```Py
+foo: int
+```
+
+All this says is, the type of the variable `foo` should be an integer. Notice how there is no initial value here. This line of code does not create a variable `foo`, all it does is add a hint that `foo`, once it exists, should be an integer. That means this will raise a `NameError`:
+
+```
+$ python
+>>> foo: int
+>>> foo
+NameError: name 'foo' is not defined
+```
+
+It is possible to combine type hints and initialization on the same line, like so:
+
+```Py
+foo: int = 3
+```
+
+That looks somewhat redundant, doesn't it? How can the *literal* `3` be anything else than an integer? This is where type inference kicks in. Tools such as `mypy` will try to infer the types of variables from their use. It is quite safe to assume type inference is possible here, so probably best to just write:
+
+```Py
+foo = 3
+```
+
+Type inference does have its limitations, for instance `mypy` will not do any type inference in functions without type hints. To understand why, let's quickly into function type hints. In the simplest form:
+
+```Py
+def add(a: int, b: int) -> int:
+    c = a + b
+    return c
+```
+
+The syntax is relatively straight forward, using the colon (`:`) for parameter type hints, and the arrow (`->`) for the return type. Notice how the type of `c` is not annotated. It can be, but it is not needed. From the types of `a` and `b` and the `+` operation, `mypy` can infer the type of `c`. But what if we did not annotate this function. Well, in that case, `a` and `b` could be anything: `str`, `float`, `list`, you name it! This is where `mypy` draws a line, if you do not annotate a function, `mypy` will not even attempt to do type inference. Instead all variables will be of type `Any`.
+
+What is `Any`? Well, anything really. It is an escape hatch of sorts that provides no information. Once `Any` gets involved type checking becomes rather impossible. What is `Any + int`? `Any`
+
+1. Annotate the `factorial` function below.
+
+    ```Py
+    def factorial(num):
+        total = 1
+        for i in range(2, num + 1):
+            total *= i
+        return total
+    ```
+
+    <textarea name="form[q1]" rows="5" required=""></textarea>
+
+
+## Generics
+
+Integers, floats, booleans and strings are primitive data types. Built into the language, they serve as building blocks for more complex data structures. For instance, you might need a `list` to store your data. 
+
+```Py
+numbers: list = [1, 2, 3]
+number = numbers.pop()
+```
+
+Here is the catch, the type `list` does not tell *anything* about what is in the `list`. So really what we have here is a `list` containing `Any`. In this case the type of `number` would be `Any` too.
+
+A `list` is a generic data type. It can store various types, but its operation will vary based on what you store. Simply put for a `list`, if you initially store integers in the list, you will later be able to retrieve integers from that list. This can be annotated as follows:
+
+```Py
+numbers: list[int] = [1, 2, 3]
+number = numbers.pop()
+```
+
+Now `numbers` is defined as a list of integers, and through that `number` will be of type `int` too.
+
+Let's take a quick look at `dict`. Dictionaries are generic over two types, their keys and values. This is how that can be annotated:
+
+```Py
+grades: dict[str, int] = {"Martijn": 7, "Marleen": 8}
+```
+
+Tuples are an immutable data structure, once initialized it cannot be changed. So it is known up front exactly what the type of each value in the tuple is going to be. Because of this the `tuple` type can take a variable amount of generic anotations like so:
+
+```Py
+foo: tuple[int, float]: (7, 7.2)
+bar: tuple[int, float, str]: (8, 7.9, "hello world")
+```
+
+What about nested data structures?
+
+```Py
+stats: dict[str, tuple[int, float]] = {"Martijn": (7, 7.2), "Marleen": (8, 8.1)}
+```
+
+Again, in most situations `mypy` can infer the types of the variables, and it is not strictly needed to annotate each data structure for type checking. That said, especially when concerning data structures, annotations make the code easier to understand.  
+
+2. Annotate the data structures below:
+
+    ```Py
+    foo = ["hello", "world"]
+    ```
+
+    <textarea name="form[q2.1]" rows="1" required=""></textarea>
+
+    ```Py
+    bar = [("Martijn", 1), ("Marleen", 2)]
+    ```
+
+    <textarea name="form[q2.2]" rows="1" required=""></textarea>
+
+    ```Py
+    baz = {1: {2: {3: "hello"}}}
+    ```
+
+    <textarea name="form[q2.3]" rows="1" required=""></textarea>
+
+
+## Abstract types
