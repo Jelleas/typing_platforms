@@ -587,7 +587,7 @@ print(create_pyramid(get_stars, 5))
     import time
 
     def pick_one(a, b):
-        time_in_milliseconds: int = time.time()
+        time_in_milliseconds: int = int(time.time() * 1000)
         if time_in_milliseconds % 2 == 0:
             return a
         return b 
