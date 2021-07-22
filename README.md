@@ -1,4 +1,4 @@
-# Static type checking with Python
+# Static type checking in Python
 
 With Python 3.5 came [type hints](https://www.python.org/dev/peps/pep-0484/). A system within Python to *hint* what the type of a variable should be. Probably best explained by a quote from a certain [Disney classic](https://www.imdb.com/title/tt0325980/):
 
@@ -352,6 +352,15 @@ This function will work for any type T, and it will return that same type.
 
 </details>
 
+3. Annotate the generic function below with a type variable:
+
+    ```Py
+    def repeat(x, n):
+        return [x] * n
+    ```
+
+    <textarea name="form[q3]" rows="2" required=""></textarea>
+
 ## Abstract types
 
 <details>
@@ -387,6 +396,23 @@ def sum(items: Iterable[int]) -> int:
 
 Now any calls to `sum`, whether that'd be with a `tuple` or `set`, will all pass type checks. As all of these data structures are iterable! This form of abstract types is called structural subtyping. Alternatively, and probably easier to remember: **static duck typing**. This is done through creating a subtype that only contains some structural aspect of the original type. For instance, `Iterable` is a subtype with only the method `__iter__` (Python's hidden method for iterable things). So as long as the actual type implements `__iter__` any type check will pass.
 
+The `typing` module provides more duck types, most notably: `Sequence` and `Mapping`. `Sequence` is a duck type for anything that keeps an order and is index-able. Lists and tuples are, but a `set` for instance is not.
+
+```Py
+from typing import Sequence
+
+a: Sequence[int] = [1, 2, 3]  # All good
+b: Sequence[int] = (1, 2, 3)  # All good
+c: Sequence[int] = {1, 2, 3}  # Incompatible types in assignment (expression has type "Set[int]", variable has type "Sequence[int]")
+```
+
+`Mapping` is a generic type for structures that map one value to another, such as dictionaries for instance.
+
+```Py
+from typing import Mapping
+
+a: Mapping[str, int] = {"foo": 1}  # All good
+```
 
 <details>
 <summary>For the technically curious...</summary>
@@ -416,6 +442,46 @@ sum([1.5, None]) # error: List item 1 has incompatible type "None"; expected "Su
 </details>
 
 </details>
+
+4. Annotate the code below with duck types instead:
+
+    ```Py
+    T = TypeVar("T")
+
+    def reverse(items: list[T]) -> list[T]:
+        new = []
+        for item in items:
+            new.insert(0, item)
+        return new
+    ```
+
+    <textarea name="form[q4.1]" rows="5" required=""></textarea>
+
+    ```Py
+    T = TypeVar("T")
+
+    def select(items: list[T], indices: list[int]) -> list[T]:
+        selection = []
+        for index in indices:
+            selection.append(items[index])
+        return selection
+    ```
+    
+    <textarea name="form[q4.2]" rows="5" required=""></textarea>
+
+
+    ```Py
+    T = TypeVar("T")
+
+    def filter(items: list[T], allowed: dict[T, bool]) -> list[T]:
+        new = []
+        for item in items:
+            if dict[item]:
+                new.append(item)
+        return new
+    ```
+
+    <textarea name="form[q4.3]" rows="6" required=""></textarea>
 
 <details>
 <summary> Nominal subtyping aka subclassing </summary>
@@ -480,8 +546,6 @@ def find_index(haystack: Sequence[T], needle: T) -> Optional[int]:
 ```
 
 > `Optional[int]` is equivalant to `Union[int, None]`. In that sense, it is entirely optional to use.
-
-> `Sequence` is a duck type for anything that keeps an order and is index-able. Lists and tuples are, but a `set` for instance is not.
 
 ### Callable
 
