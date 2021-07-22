@@ -233,7 +233,7 @@ What is `Any`? Well, anything really. It is an escape hatch of sorts that provid
 
 </details>
 
-1. Annotate the `factorial` function below.
+1. Annotate the `factorial` function below:
 
     ```Py
     def factorial(num):
@@ -571,3 +571,37 @@ print(create_pyramid(get_stars, 5))
 ```
 
 </details>
+
+5. Annotate the code below:
+
+    ```Py
+    def get(items, index):
+        if index >= len(items):
+            return None
+        return items[index]
+    ```
+
+    <textarea name="form[q5.1]" rows="4" required=""></textarea>
+
+    ```Py
+    import time
+
+    def pick_one(a, b):
+        time_in_milliseconds: int = time.time()
+        if time_in_milliseconds % 2 == 0:
+            return a
+        return b 
+    ```
+    
+    <textarea name="form[q5.2]" rows="5" required=""></textarea>
+
+    ```Py
+    def map(function, items):
+        results = []
+        for item in items:
+            result = function(item)
+            results.append(result)
+        return results
+    ```
+
+    <textarea name="form[q5.3]" rows="6" required=""></textarea>
