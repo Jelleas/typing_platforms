@@ -190,6 +190,8 @@ Static type checking is often preferred, and so much so that languages such as J
 
 ## Type hints in Python
 
+<details>
+<summary>Type hints</summary>
 A type hint in the simplest form looks like this:
 
 ```Py
@@ -229,6 +231,8 @@ The syntax is relatively straight forward, using the colon (`:`) for parameter t
 
 What is `Any`? Well, anything really. It is an escape hatch of sorts that provides no information. Once `Any` gets involved type checking becomes rather impossible. What is `Any + int`? `Any`
 
+</details>
+
 1. Annotate the `factorial` function below.
 
     ```Py
@@ -241,8 +245,8 @@ What is `Any`? Well, anything really. It is an escape hatch of sorts that provid
 
     <textarea name="form[q1]" rows="5" required=""></textarea>
 
-
-## Generics
+<details>
+<summary>Generics</summary>
 
 Integers, floats, booleans and strings are primitive data types. Built into the language, they serve as building blocks for more complex data structures. For instance, you might need a `list` to store your data. 
 
@@ -284,6 +288,8 @@ stats: dict[str, tuple[int, float]] = {"Martijn": (7, 7.2), "Marleen": (8, 8.1)}
 
 Again, in most situations `mypy` can infer the types of the variables, and it is not strictly needed to annotate each data structure for type checking. That said, especially when it comes to data structures, annotations make the code easier to understand.  
 
+</details>
+
 2. Annotate the data structures below:
 
     ```Py
@@ -304,8 +310,8 @@ Again, in most situations `mypy` can infer the types of the variables, and it is
 
     <textarea name="form[q2.3]" rows="1" required=""></textarea>
 
-
-## Type Variables
+<details>
+<summary>Type variables</summary>
 
 Generics work through the use of type variables. In Python these variables are provided by `TypeVar` from the `typing` module. Here is how it works:
 
@@ -344,7 +350,12 @@ def longest(a: T, b: T) -> T:
 
 This function will work for any type T, and it will return that same type.
 
-## Abstract types: structural subtyping aka duck typing
+</details>
+
+## Abstract types
+
+<details>
+<summary> Structural subtyping aka duck typing </summary>
 
 So far we have looked at concrete types, such as integers, strings and lists. These types are expressive, you know exactly what you are working with. But, often these concrete types limit design. Take for instance this function:
 
@@ -404,7 +415,10 @@ sum([1.5, None]) # error: List item 1 has incompatible type "None"; expected "Su
 
 </details>
 
-## Abstract types: nominal subtyping aka subclassing
+</details>
+
+<details>
+<summary> Nominal subtyping aka subclassing </summary>
 
 Duck typing is great and all, but what if we actually do want a duck, not something that happens to act like a duck. For instance, let's say we are building a grading app and we have three user roles, `Teacher`, `Assistant` and `Student`. Implemented like so:
 
@@ -429,7 +443,10 @@ def add_grade(user: Staff) -> None: pass
 
 This way the type checker will allow all three roles to view grades, but only the `Staff` roles can add a grade. This form of abstract types is called nominal subtyping, where that type or any subclass of that type is accepted.
 
-## Abstract types: special types
+</details>
+
+<details>
+<summary> Special types </summary>
 
 There are some special cases that need special treating and you'll find these in the `typing` module! [Here are the docs](https://docs.python.org/3/library/typing.html#special-forms)
 
@@ -488,3 +505,5 @@ def create_pyramid(create_layer: Callable[[int], str], height) -> str:
 print(create_pyramid(get_hashes, 5))
 print(create_pyramid(get_stars, 5))
 ```
+
+</details>
