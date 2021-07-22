@@ -605,3 +605,29 @@ print(create_pyramid(get_stars, 5))
     ```
 
     <textarea name="form[q5.3]" rows="6" required=""></textarea>
+
+
+## mypy
+
+Install `mypy` through pip like so:
+
+```
+$ pip install mypy
+```
+
+> Depending on your installation, you might need to use `pip3` instead, or `python -m pip`.
+
+Once installed, simply run mypy like so:
+
+```
+$ mypy my_program.py
+```
+
+Or to type check all python files, use shell globbing or pass a directory instead.
+
+```
+$ mypy *.py
+$ mypy .
+```
+
+To check your answers to the questions above, simply paste them in a Python file and run `mypy` on it. When doing so, be sure to pass in various inputs to the various functions. You can also make use of `reveal_type` to show what type mypy thinks a variable is. Read more about this feature in [the mypy docs](https://mypy.readthedocs.io/en/latest/common_issues.html?highlight=reveal_type#reveal-type).
