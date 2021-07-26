@@ -87,79 +87,8 @@ But wait, floats can be summed right? Well, tough luck. You'll need to write a n
 
 > For the curious, there are ways to escape C's type system through the use of casting and pointers. Most notably through the use of `void` pointers.
 
-
-### Java
-
-Let's find a middleground, Java. Java is a bureaucratic programming languages of sorts. Nothing is assumed, and everything has to be explicitly denoted. Here is an example: 
-
-```java
-public static <T extends Number> sum(Iterable<T> items) {
-    T total = 0;
-    for (T item : items) {
-        total = total.doubleValue() + item.doubleValue();
-    }
-    return total;
-}
-```
-
-Quickly jumping over `public static`, which just means this function can be called from anywhere (`public`) and is always available (`static`). You'll find `<T extends Number>`.
-
-What is a `Number`? Well, as it turns out, [Number](https://docs.oracle.com/javase/8/docs/api/java/lang/Number.html) is a `class` of which each number (`Integer`, `Float`, `Double`, etc.) inherits. `<T extends Number>` just means any type `T` that is an extension of a `Number`. So really what `T` says is, anything that is a Number, and thus can do anything a Number can do, can be passed into this function and will be returned from it too. 
-
-Next, `Iterable<T>`. Iterable is an abstract generic type, more on this later. For now, all this says is some collection of things, be it a list, an array, or a tuple perhaps, over which can be iterated (with a for-loop for instance), containing elements of type `T`.
-
-`item.doubleValue()`??? Inside the function it is now unknown what the exact types of the items are. All we know is that they are `Number`s. At this point we can only assume that an item can do anything a `Number` can do, and that is not much! In fact, a `Number` in Java can only convert itself to a more concrete `Double`, `Integer`, `Float`, etc. So what this function does is convert all items to `Double`s and then sums them up. 
-
-Through this, this all works:
-
-```java
-sum({1, 2});
-sum({4.0, 5.0});
-```
-
-And even different data structures, such as linked lists:
-
-```java
-LinkedList<Number> items = new LinkedList<Number>();
-items.add(1);
-items.add(2.0);
-sum(items);
-```
-
-And this will still nicely give a compile error:
-
-```java
-add({"hello", "bye"});
-```
-
-Problem solved... right? Well, we did end up paying a steep price. Because be honest, which one is easier to understand:
-
-```Py
-def sum(items):
-    total = 0
-    for item in items:
-        total += item
-    return total
-```
-
-```java
-public static <T extends Number> sum(Iterable<T> items) {
-    T total = 0;
-    for (T item : items) {
-        total = total.doubleValue() + item.doubleValue();
-    }
-    return total;
-}
-```
-
-Suprisingly perhaps, is that the answer to that question depends on who you'd ask. If you are used to dealing with millions of lines of code written by many others before you, you might strongly prefer the `Java` implementation. Simply because it gives you all information you need to know.
 </details>
 
-<details>
-<summary>No type system</summary>
-
-All your computer has is `1`-s and `0`-s, and all it can do is operate on these ones and zeroes. So at the root there are effectively no types. Instead the program just has to treat certain ones and zeroes differently than others. This is true in machine code (the ones and zeros), but also one level higher in [an assembly language](https://cs.lmu.edu/~ray/notes/x86assembly/). These type of languages are often just the instructions an operating system can execute, but in a more convenient text form. Assembly languages do contain data instructions for storing the length and allignment of data, but not much more than that. Naturally this way of working is error prone and undesirable. 
-</details>
 
 <details>
 <summary>Dynamic vs Static</summary>
