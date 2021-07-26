@@ -417,7 +417,7 @@ sum([1.5, None]) # error: List item 1 has incompatible type "None"; expected "Su
     def filter(items: list[T], allowed: dict[T, bool]) -> list[T]:
         new = []
         for item in items:
-            if dict[item]:
+            if allowed[item]:
                 new.append(item)
         return new
     ```
